@@ -782,4 +782,4 @@ if __name__ == '__main__':
     print("  Admin : admin@fleet.com / admin123")
     print("="*55 + "\n")
     port = int(os.environ.get('PORT', 5000))
-app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port)
