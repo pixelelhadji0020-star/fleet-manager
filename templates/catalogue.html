@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Catalogue{% endblock %}
+{% block extra_css %}
+<style>
+.filter-bar{background:#fff;border:1px solid var(--ink-15);border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.filter-bar .form-group{margin-bottom:0;flex:1;min-width:130px}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.vcard{background:#fff;border:1px solid var(--ink-15);border-radius:14px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
+.vcard:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.06)}
+.vcard-img{height:160px;background:var(--ink-07);display:flex;align-items:center;justify-content:center;font-size:52px;border-bottom:1px solid var(--ink-15)}
+.vcard-body{padding:18px;flex:1;display:flex;flex-direction:column}
+.vcard-cat{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-40);margin-bottom:5px}
+.vcard-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+.vcard-specs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.spec-tag{font-size:10.5px;padding:2px 7px;border-radius:5px;background:var(--ink-07);color:var(--ink-70);border:1px solid var(--ink-15)}
+.vcard-footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--ink-15)}
+.vcard-price{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.03em}
+.vcard-price span{font-size:12px;font-weight:400;color:var(--ink-40);font-family:'Instrument Sans',sans-serif}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+.dot-green{background:#2a9d4a}.dot-red{background:#c0392b}.dot-gray{background:#888}
+.no-results{text-align:center;padding:64px 0;color:var(--ink-40)}
+.no-results-icon{font-size:48px;margin-bottom:12px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>Catalogue des véhicules</h1>
+    <p>{{ vehicles|length }} véhicule{{ 's' if vehicles|length > 1 }} disponible{{ 's' if vehicles|length > 1 }}</p>
+  </div>
+  <form method="get" class="filter-bar">
+    <div class="form-group"><label class="form-label">Dates de location</label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" type="date" name="date_start" value="{{ filters.date_start }}" style="width:150px" min="{{ '' }}">
+        <input class="form-input" type="date" name="date_end" value="{{ filters.date_end }}" style="width:150px">
+      </div></div>
+    <div class="form-group"><label class="form-label">Catégorie</label>
+      <select class="form-select" name="category">
+        <option value="">Toutes</option>
+        {% for c in categories %}<option value="{{ c.category }}" {% if filters.category==c.category %}selected{% endif %}>{{ c.category }}</option>{% endfor %}
+      </select></div>
+    <div class="form-group"><label class="form-label">Carburant</label>
+      <select class="form-select" name="fuel">
+        <option value="">Tous</option>
+        {% for f in fuels %}<option value="{{ f.fuel }}" {% if filters.fuel==f.fuel %}selected{% endif %}>{{ f.fuel }}</option>{% endfor %}
+      </select></div>
+    <div class="form-group"><label class="form-label">Budget max / jour (FCFA)</label>
+      <input class="form-input" type="number" name="max_price" value="{{ filters.max_price }}" placeholder="Ex: 100" style="width:120px"></div>
+    <button type="submit" class="btn btn-primary">Rechercher</button>
+    <a href="/catalogue" class="btn btn-outline">Réinitialiser</a>
+  </form>
+  {% if vehicles %}
+  <div class="vgrid">
+    {% for v in vehicles %}
+    <div class="vcard">
+      <div class="vcard-img">
+        {% if v.image %}
+          <img src="/uploads/{{ v.image }}" alt="{{ v.brand }} {{ v.model }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          {% if v.category=='Citadine' %}🚗{% elif v.category=='SUV' %}🚙{% elif v.category=='Luxe' %}🏎️{% elif v.category=='Utilitaire' %}🚐{% else %}🚘{% endif %}
+        {% endif %}
+      </div>
+      <div class="vcard-body">
+        <div class="vcard-cat">{{ v.category }}</div>
+        <div class="vcard-title">{{ v.brand }} {{ v.model }}</div>
+        <div style="font-size:12px;color:var(--ink-70);margin-bottom:8px">
+          <span class="status-dot {% if v.status=='disponible' %}dot-green{% elif v.status=='louee' %}dot-red{% else %}dot-gray{% endif %}"></span>
+          {{ 'Disponible' if v.status=='disponible' else 'En location' if v.status=='louee' else v.status }}
+          {% if v.avg_note %} · <span class="star">★</span> {{ v.avg_note }}{% endif %}
+        </div>
+        <div class="vcard-specs">
+          <span class="spec-tag">{{ v.fuel }}</span>
+          <span class="spec-tag">{{ v.transmission }}</span>
+          <span class="spec-tag">{{ v.seats }} places</span>
+          <span class="spec-tag">{{ v.year }}</span>
+        </div>
+        <div class="vcard-footer">
+          <div class="vcard-price">{{ v.price_per_day }} FCFA <span>/ jour</span></div>
+          <a href="/vehicule/{{ v.id }}" class="btn btn-primary btn-sm">Voir →</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="no-results">
+    <div class="no-results-icon">🔍</div>
+    <div style="font-weight:600;font-size:16px;margin-bottom:8px">Aucun véhicule trouvé</div>
+    <div>Essayez de modifier vos filtres ou les dates de location.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

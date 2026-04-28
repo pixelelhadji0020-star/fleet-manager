@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Administration{% endblock %}
+{% block extra_css %}
+<style>
+.admin-nav{background:#fff;border-bottom:1px solid var(--ink-15);padding:0 48px;display:flex;gap:4px;overflow-x:auto}
+.admin-nav a{font-size:12.5px;font-weight:500;padding:12px 16px;color:var(--ink-70);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.admin-nav a:hover{color:var(--ink)}
+.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.action-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid;font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.act-confirm{background:var(--green-bg);border-color:#a8d8b4;color:var(--green)}.act-confirm:hover{background:var(--green);color:#fff}
+.act-refuse{background:var(--red-bg);border-color:#f0b8b8;color:var(--red)}.act-refuse:hover{background:var(--red);color:#fff}
+.act-done{background:#e8eef8;border-color:#b8c8e8;color:var(--accent)}.act-done:hover{background:var(--accent);color:#fff}
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-nav">
+  <a href="/admin" class="{% if request.endpoint=='admin_dashboard' %}active{% endif %}">Dashboard</a>
+  <a href="/admin/clients" class="{% if 'client' in request.endpoint %}active{% endif %}">Clients</a>
+  <a href="/admin/reservations" class="{% if 'reservation' in request.endpoint %}active{% endif %}">Réservations</a>
+  <a href="/admin/vehicules" class="{% if 'vehicle' in request.endpoint %}active{% endif %}">Véhicules</a>
+  <a href="/admin/statistiques" class="{% if 'stats' in request.endpoint %}active{% endif %}">Statistiques</a>
+</div>
+<div class="container" style="padding-top:32px;padding-bottom:60px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px">Tableau de bord</h1>
+      <p style="color:var(--ink-70);font-size:14px">Vue d'ensemble de la plateforme</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid-4" style="margin-bottom:32px">
+    {% for label, val, sub, color in [
+      ('Clients actifs', stats.total_clients, stats.docs_pending|string + ' docs en attente', 'var(--accent)'),
+      ('Véhicules dispo', stats.vehicles_dispo, (stats.total_vehicles|string) + ' au total', 'var(--teal)'),
+      ('Réservations', stats.reservations_pending, 'en attente de confirmation', 'var(--gold)'),
+      ('Chiffre d\'affaires', (stats.total_revenue or 0)|round(0)|int|string + ' FCFA', (stats.total_completed|string) + ' locations terminées', 'var(--ink)'),
+    ] %}
+    <div class="stat-card" style="border-top:3px solid {{ color }}">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value">{{ val }}</div>
+      <div class="stat-sub">{{ sub }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start">
+    <!-- RECENT RESERVATIONS -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">Réservations récentes</h2>
+        <a href="/admin/reservations" style="font-size:13px;color:var(--accent);font-weight:600">Voir tout →</a>
+      </div>
+      <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;overflow:hidden">
+        <table>
+          <thead><tr>
+            <th>Client</th><th>Véhicule</th><th>Dates</th><th>Statut</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+          {% for r in recent_res %}
+          <tr>
+            <td><strong>{{ r.first_name }} {{ r.last_name }}</strong></td>
+            <td>{{ r.brand }} {{ r.model }}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-70)">{{ r.date_start }}<br>→ {{ r.date_end }}</td>
+            <td><span class="badge {% if r.status=='confirmee' %}badge-green{% elif r.status=='en_attente' %}badge-gold{% elif r.status=='terminee' %}badge-teal{% elif r.status in ['annulee','refusee'] %}badge-red{% else %}badge-gray{% endif %}">
+              {{ {'en_attente':'Attente','confirmee':'Confirmée','terminee':'Terminée','annulee':'Annulée','refusee':'Refusée'}.get(r.status,r.status) }}
+            </span></td>
+            <td>
+              {% if r.status=='en_attente' %}
+              <form method="post" action="/admin/reservation/{{ r.id }}/action" style="display:inline">
+                <input type="hidden" name="action" value="confirmer">
+                <button type="submit" class="action-btn act-confirm" style="font-size:11px;padding:4px 10px">✓</button>
+              </form>
+              <form method="post" action="/admin/reservation/{{ r.id }}/action" style="display:inline">
+                <input type="hidden" name="action" value="refuser">
+                <button type="submit" class="action-btn act-refuse" style="font-size:11px;padding:4px 10px">✕</button>
+              </form>
+              {% elif r.status=='confirmee' %}
+              <form method="post" action="/admin/reservation/{{ r.id }}/action" style="display:inline">
+                <input type="hidden" name="action" value="terminer">
+                <button type="submit" class="action-btn act-done" style="font-size:11px;padding:4px 10px">Clôturer</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PENDING DOCS -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">Documents en attente</h2>
+        <a href="/admin/clients?status=en_attente" style="font-size:13px;color:var(--accent);font-weight:600">Voir tout →</a>
+      </div>
+      {% if pending_docs %}
+      {% for c in pending_docs %}
+      <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;padding:16px 18px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>{{ c.first_name }} {{ c.last_name }}</strong>
+          <span class="badge badge-gold">En attente</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink-70);margin-bottom:10px">
+          {{ c.email }}<br>
+          Soumis le {{ c.doc_submitted_at[:10] if c.doc_submitted_at else '—' }}
+        </div>
+        <a href="/admin/client/{{ c.id }}" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Examiner les documents →</a>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;padding:32px;text-align:center;color:var(--ink-70)">
+        <div style="font-size:28px;margin-bottom:8px">✓</div>
+        <div style="font-size:13px">Aucun document en attente</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

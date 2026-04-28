@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Statistiques{% endblock %}
+{% block extra_css %}
+<style>
+.admin-nav{background:#fff;border-bottom:1px solid var(--ink-15);padding:0 48px;display:flex;gap:4px;overflow-x:auto}
+.admin-nav a{font-size:12.5px;font-weight:500;padding:12px 16px;color:var(--ink-70);border-bottom:2px solid transparent;white-space:nowrap}
+.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.chart-card{background:#fff;border:1px solid var(--ink-15);border-radius:12px;padding:22px 24px}
+.chart-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:12px;width:130px;flex-shrink:0;color:var(--ink-70);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-bg{flex:1;height:8px;background:var(--ink-07);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-70);width:60px;text-align:right}
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-nav">
+  <a href="/admin">Dashboard</a><a href="/admin/clients">Clients</a><a href="/admin/reservations">Réservations</a>
+  <a href="/admin/vehicules">Véhicules</a><a href="/admin/statistiques" class="active">Statistiques</a>
+</div>
+<div class="container" style="padding-top:32px;padding-bottom:60px">
+  <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:28px">Tableau de bord analytique</h1>
+
+  <!-- REVENUE BY MONTH -->
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="chart-card">
+      <div class="chart-title">Chiffre d'affaires mensuel</div>
+      {% if revenue_monthly %}
+        {% set max_rev = revenue_monthly|map(attribute='revenue')|max %}
+        {% for row in revenue_monthly|reverse %}
+        <div class="bar-row">
+          <div class="bar-label">{{ row.month }}</div>
+          <div class="bar-bg"><div class="bar-fill" style="width:{{ (row.revenue / max_rev * 100)|round }}%;background:#1a3a5c"></div></div>
+          <div class="bar-val">{{ row.revenue }} FCFA</div>
+        </div>
+        {% endfor %}
+      {% else %}<div style="color:var(--ink-40);font-size:13px;padding:16px 0">Aucune donnée disponible</div>{% endif %}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Locations par catégorie</div>
+      {% if by_category %}
+        {% set max_cat = by_category|map(attribute='rentals')|max if by_category|map(attribute='rentals')|max > 0 else 1 %}
+        {% set colors = ['#1a3a5c','#0d5e4f','#8b6914','#962020','#534AB7','#185FA5'] %}
+        {% for row in by_category %}
+        <div class="bar-row">
+          <div class="bar-label">{{ row.category }}</div>
+          <div class="bar-bg"><div class="bar-fill" style="width:{{ (row.rentals / max_cat * 100)|round }}%;background:{{ colors[loop.index0 % colors|length] }}"></div></div>
+          <div class="bar-val">{{ row.rentals }} loc.</div>
+        </div>
+        {% endfor %}
+      {% else %}<div style="color:var(--ink-40);font-size:13px;padding:16px 0">Aucune donnée</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- TOP VEHICLES -->
+  <div class="chart-card" style="margin-bottom:24px">
+    <div class="chart-title">Top véhicules — Popularité & Rentabilité</div>
+    <table>
+      <thead><tr>
+        <th>Véhicule</th><th>Catégorie</th><th>Locations</th><th>CA total</th><th>Note moy.</th>
+        <th>Taux d'util. (estimé)</th>
+      </tr></thead>
+      <tbody>
+      {% for v in top_vehicles %}
+      <tr>
+        <td><strong>{{ v.brand }} {{ v.model }}</strong></td>
+        <td>{{ v.category }}</td>
+        <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px">{{ v.rentals or 0 }}</td>
+        <td style="font-weight:600">{{ v.revenue or 0 }} FCFA</td>
+        <td>{% if v.avg_note %}<span class="star">★</span> {{ v.avg_note }}{% else %}—{% endif %}</td>
+        <td>
+          {% set rate = [(v.rentals or 0) * 4, 100]|min %}
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:var(--ink-07);border-radius:3px;max-width:100px">
+              <div style="width:{{ rate }}%;height:100%;background:var(--teal);border-radius:3px"></div>
+            </div>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-70)">{{ rate }}%</span>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-70)">Aucune location terminée</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SATISFACTION -->
+  {% if satisfaction %}
+  <div class="chart-card">
+    <div class="chart-title">Satisfaction client par véhicule</div>
+    <table>
+      <thead><tr><th>Véhicule</th><th>Confort</th><th>Propreté</th><th>Fiabilité</th><th>Service</th><th>Avis</th></tr></thead>
+      <tbody>
+      {% for s in satisfaction %}
+      <tr>
+        <td><strong>{{ s.brand }} {{ s.model }}</strong></td>
+        {% for note in [s.comfort, s.cleanliness, s.reliability, s.service] %}
+        <td>
+          <div style="display:flex;align-items:center;gap:5px">
+            <div style="width:40px;height:5px;background:var(--ink-07);border-radius:3px">
+              <div style="width:{{ ((note or 0)/5*100)|round }}%;height:100%;background:#e8b84b;border-radius:3px"></div>
+            </div>
+            <span style="font-family:'DM Mono',monospace;font-size:11px">{{ note or '—' }}</span>
+          </div>
+        </td>
+        {% endfor %}
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-70)">{{ s.total_reviews }} avis</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

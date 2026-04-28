@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+  <div style="width:100%;max-width:420px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="width:52px;height:52px;background:var(--ink);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'DM Mono',monospace;font-size:18px;color:#fff">FM</div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px">Connexion</h1>
+      <p style="color:var(--ink-70);font-size:14px">Accédez à votre espace client</p>
+    </div>
+    <div class="card">
+      <form method="post">
+        <div class="form-group"><label class="form-label">Adresse email</label>
+          <input class="form-input" type="email" name="email" required placeholder="vous@exemple.fr" autofocus></div>
+        <div class="form-group"><label class="form-label">Mot de passe</label>
+          <input class="form-input" type="password" name="password" required placeholder="••••••••"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:12px;margin-top:8px">Se connecter</button>
+      </form>
+      <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--ink-70)">
+        Pas encore de compte ? <a href="/inscription" style="color:var(--accent);font-weight:600">Créer un compte</a>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:12px 16px;background:var(--ink-07);border-radius:10px;font-size:12px;color:var(--ink-70);text-align:center">
+      Admin : admin@fleet.com / admin123
+    </div>
+  </div>
+</div>
+{% endblock %}

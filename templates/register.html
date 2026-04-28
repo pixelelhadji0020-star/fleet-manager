@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Inscription{% endblock %}
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+  <div style="width:100%;max-width:460px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="width:52px;height:52px;background:var(--ink);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'DM Mono',monospace;font-size:18px;color:#fff">FM</div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px">Créer un compte</h1>
+      <p style="color:var(--ink-70);font-size:14px">Rejoignez Fleet Manager et réservez votre véhicule</p>
+    </div>
+    <div class="card">
+      <form method="post">
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Prénom</label>
+            <input class="form-input" type="text" name="first_name" required placeholder="Jean"></div>
+          <div class="form-group"><label class="form-label">Nom</label>
+            <input class="form-input" type="text" name="last_name" required placeholder="Dupont"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Adresse email</label>
+          <input class="form-input" type="email" name="email" required placeholder="vous@exemple.fr"></div>
+        <div class="form-group"><label class="form-label">Téléphone <span style="color:var(--ink-40)">(optionnel)</span></label>
+          <input class="form-input" type="tel" name="phone" placeholder="+33 6 00 00 00 00"></div>
+        <div class="form-group"><label class="form-label">Mot de passe</label>
+          <input class="form-input" type="password" name="password" required placeholder="Min. 8 caractères" minlength="6"></div>
+        <div style="background:var(--ink-07);border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:12.5px;color:var(--ink-70);line-height:1.5">
+          📋 Après inscription, vous devrez déposer vos documents (permis + CNI + justificatif) pour pouvoir réserver.
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:12px">Créer mon compte →</button>
+      </form>
+      <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--ink-70)">
+        Déjà un compte ? <a href="/connexion" style="color:var(--accent);font-weight:600">Se connecter</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

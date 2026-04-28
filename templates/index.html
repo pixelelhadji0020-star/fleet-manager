@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}Accueil{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero{
+  background:var(--ink);color:var(--paper);
+  padding:80px 48px;display:flex;align-items:center;justify-content:space-between;gap:48px;
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;right:-80px;top:-80px;
+  width:400px;height:400px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.05);pointer-events:none;
+}
+.hero-content{max-width:560px;position:relative;z-index:1}
+.hero-label{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:20px;
+}
+.hero-title{
+  font-family:'Syne',sans-serif;font-size:52px;font-weight:800;
+  letter-spacing:-.04em;line-height:1;margin-bottom:20px;
+}
+.hero-title em{color:rgba(255,255,255,.4);font-style:italic}
+.hero-sub{font-size:16px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:36px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.hero-btn{
+  padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;
+  font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:all .15s;
+}
+.hero-btn-primary{background:var(--paper);color:var(--ink)}
+.hero-btn-primary:hover{background:#e8e5e0}
+.hero-btn-outline{background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.2)}
+.hero-btn-outline:hover{border-color:rgba(255,255,255,.5);color:#fff}
+
+.hero-stats{
+  display:flex;flex-direction:column;gap:16px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:28px 32px;min-width:220px;position:relative;z-index:1;
+}
+.hero-stat-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.hero-stat-label{font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;font-family:'DM Mono',monospace;letter-spacing:.06em}
+
+.section-label-outer{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-40);margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-label-outer::after{content:'';flex:1;height:1px;background:var(--ink-15)}
+
+.vcard{
+  background:#fff;border:1px solid var(--ink-15);border-radius:14px;
+  overflow:hidden;transition:all .2s;display:flex;flex-direction:column;
+}
+.vcard:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.07)}
+.vcard-img{
+  height:180px;background:var(--ink-07);
+  display:flex;align-items:center;justify-content:center;
+  font-size:56px;border-bottom:1px solid var(--ink-15);
+}
+.vcard-body{padding:20px;flex:1;display:flex;flex-direction:column}
+.vcard-cat{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-40);margin-bottom:6px;
+}
+.vcard-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px}
+.vcard-rating{font-size:12px;color:var(--ink-70);display:flex;align-items:center;gap:4px;margin-bottom:12px}
+.vcard-specs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.spec-tag{
+  font-size:11px;padding:3px 8px;border-radius:6px;
+  background:var(--ink-07);color:var(--ink-70);border:1px solid var(--ink-15);
+}
+.vcard-footer{
+  margin-top:auto;display:flex;align-items:center;justify-content:space-between;
+  padding-top:14px;border-top:1px solid var(--ink-15);
+}
+.vcard-price{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.03em}
+.vcard-price span{font-family:'Instrument Sans',sans-serif;font-size:12px;font-weight:400;color:var(--ink-40)}
+
+.how-step{display:flex;gap:20px;align-items:flex-start;padding:24px 0;border-bottom:1px solid var(--ink-15)}
+.how-step:last-child{border-bottom:none}
+.how-num{
+  width:44px;height:44px;border-radius:12px;background:var(--ink);
+  color:var(--paper);font-family:'DM Mono',monospace;font-size:15px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.how-title{font-weight:700;font-size:16px;margin-bottom:4px}
+.how-desc{font-size:14px;color:var(--ink-70);line-height:1.6}
+
+.cta-band{
+  background:var(--accent);color:#fff;
+  border-radius:16px;padding:48px;margin:48px 0;
+  display:flex;align-items:center;justify-content:space-between;gap:32px;
+}
+.cta-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
+.cta-sub{font-size:15px;color:rgba(255,255,255,.65);line-height:1.5}
+.cta-btn{
+  white-space:nowrap;padding:14px 32px;border-radius:10px;
+  background:var(--paper);color:var(--ink);font-weight:700;font-size:14px;
+  font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.cta-btn:hover{background:#e8e5e0}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-label">Agence de location automobile</div>
+    <h1 class="hero-title">Louer un véhicule,<br><em>simplement.</em></h1>
+    <p class="hero-sub">Réservez en ligne, déposez vos documents une seule fois, et prenez la route. Notre flotte de véhicules soigneusement entretenus vous attend.</p>
+    <div class="hero-actions">
+      <a href="/catalogue" class="hero-btn hero-btn-primary">Voir le catalogue</a>
+      <a href="/inscription" class="hero-btn hero-btn-outline">Créer mon compte</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-val">{{ stats.dispo }}</div>
+      <div class="hero-stat-label">Véhicules disponibles</div>
+    </div>
+    <div>
+      <div class="hero-stat-val">{{ stats.clients }}</div>
+      <div class="hero-stat-label">Clients inscrits</div>
+    </div>
+    <div>
+      <div class="hero-stat-val">{{ stats.locations }}</div>
+      <div class="hero-stat-label">Locations réalisées</div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- VEHICLES -->
+  <section style="padding:56px 0 0">
+    <div class="section-label-outer">Sélection du moment</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:28px">
+      <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em">Nos véhicules populaires</h2>
+      <a href="/catalogue" style="font-size:13px;font-weight:600;color:var(--accent)">Voir tout →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+      {% for v in vehicles %}
+      <div class="vcard">
+        <div class="vcard-img">
+          {% if v.image %}
+            <img src="/uploads/{{ v.image }}" alt="{{ v.brand }} {{ v.model }}" style="width:100%;height:100%;object-fit:cover;">
+          {% elif v.category == 'Citadine' %}🚗
+          {% elif v.category == 'SUV' %}🚙
+          {% elif v.category == 'Luxe' %}🏎️
+          {% elif v.category == 'Utilitaire' %}🚐
+          {% else %}🚘{% endif %}
+        </div>
+        <div class="vcard-body">
+          <div class="vcard-cat">{{ v.category }}</div>
+          <div class="vcard-title">{{ v.brand }} {{ v.model }}</div>
+          <div class="vcard-rating">
+            <span class="star">★</span>
+            {{ v.avg_note if v.avg_note else '—' }}
+            <span style="color:var(--ink-40)">({{ v.total_rentals }} locations)</span>
+          </div>
+          <div class="vcard-specs">
+            <span class="spec-tag">{{ v.fuel }}</span>
+            <span class="spec-tag">{{ v.transmission }}</span>
+            <span class="spec-tag">{{ v.seats }} places</span>
+            <span class="spec-tag">{{ v.year }}</span>
+          </div>
+          <div class="vcard-footer">
+            <div class="vcard-price">{{ v.price_per_day }} FCFA <span>/ jour</span></div>
+            <a href="/vehicule/{{ v.id }}" class="btn btn-primary btn-sm">Voir →</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section style="padding:64px 0">
+    <div class="section-label-outer">Comment ça marche</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:28px">Réservez en 4 étapes</h2>
+        <div class="how-step">
+          <div class="how-num">01</div>
+          <div><div class="how-title">Créez votre compte</div><div class="how-desc">Inscription rapide en 2 minutes. Email, nom, prénom — c'est tout.</div></div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">02</div>
+          <div><div class="how-title">Déposez vos documents</div><div class="how-desc">Permis de conduire, CNI et justificatif de domicile. Une seule fois, et c'est valable pour toutes vos futures locations.</div></div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">03</div>
+          <div><div class="how-title">Choisissez votre véhicule</div><div class="how-desc">Parcourez notre catalogue et réservez le véhicule qui vous convient sur vos dates.</div></div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">04</div>
+          <div><div class="how-title">Prenez la route</div><div class="how-desc">Récupérez votre véhicule à l'agence. La facture est générée automatiquement au retour.</div></div>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:28px">Pourquoi nous choisir</h2>
+        {% set features = [
+          ('🔒', 'Vérification documentaire', 'Sécurité maximale pour vous et l\'agence. Chaque client est validé avant sa première location.'),
+          ('⚡', 'Réservation instantanée', 'Disponibilités en temps réel. Plus besoin d\'appeler pour savoir si un véhicule est libre.'),
+          ('📊', 'Suivi transparent', 'Votre espace client centralise toutes vos réservations, factures et statuts en un coup d\'œil.'),
+          ('⭐', 'Flotte entretenue', 'Chaque véhicule est contrôlé entre chaque location. Les avis clients guident nos standards.'),
+        ] %}
+        {% for icon, title, desc in features %}
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--ink-15)">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--ink-07);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">{{ icon }}</div>
+          <div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:3px">{{ title }}</div>
+            <div style="font-size:13px;color:var(--ink-70);line-height:1.5">{{ desc }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-band">
+    <div>
+      <div class="cta-title">Prêt à prendre la route ?</div>
+      <div class="cta-sub">Créez votre compte gratuitement et réservez votre premier véhicule en quelques minutes.</div>
+    </div>
+    <a href="/inscription" class="cta-btn">Commencer maintenant →</a>
+  </div>
+
+</div>
+{% endblock %}

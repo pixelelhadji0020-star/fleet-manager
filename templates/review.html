@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Laisser un avis{% endblock %}
+{% block content %}
+<div class="container" style="max-width:560px;padding-top:40px;padding-bottom:60px">
+  <a href="/espace-client" style="font-size:13px;color:var(--ink-70);display:inline-flex;align-items:center;gap:6px;margin-bottom:24px">← Mon espace</a>
+  <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:8px">Votre avis</h1>
+  <p style="color:var(--ink-70);margin-bottom:28px">Location de {{ reservation.brand }} {{ reservation.model }} · du {{ reservation.date_start }} au {{ reservation.date_end }}</p>
+  <form method="post" class="card">
+    {% for field, label, icon in [('comfort_note','Confort','🛋️'),('cleanliness_note','Propreté','✨'),('reliability_note','Fiabilité','🔧'),('service_note','Accueil agence','👋')] %}
+    <div class="form-group" style="padding-bottom:16px;border-bottom:1px solid var(--ink-15);margin-bottom:16px">
+      <label class="form-label">{{ icon }} {{ label }}</label>
+      <div style="display:flex;gap:8px">
+        {% for n in [1,2,3,4,5] %}
+        <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+          <input type="radio" name="{{ field }}" value="{{ n }}" {% if n==5 %}checked{% endif %} style="accent-color:var(--accent)">
+          <span style="font-size:12px;color:var(--ink-70)">{{ n }}</span>
+        </label>
+        {% endfor %}
+        <span style="font-size:12px;color:var(--ink-40);align-self:center;margin-left:8px">/ 5</span>
+      </div>
+    </div>
+    {% endfor %}
+    <div class="form-group">
+      <label class="form-label">💬 Commentaire <span style="color:var(--ink-40)">(optionnel)</span></label>
+      <textarea class="form-textarea" name="comment" placeholder="Partagez votre expérience avec ce véhicule..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:13px">Publier mon avis ⭐</button>
+  </form>
+</div>
+{% endblock %}

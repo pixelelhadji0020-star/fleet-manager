@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Mon espace{% endblock %}
+{% block extra_css %}
+<style>
+.doc-status-banner{border-radius:12px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:14px;border:1.5px solid}
+.doc-status-banner.approuve{background:var(--green-bg);border-color:#a8d8b4}
+.doc-status-banner.en_attente{background:var(--gold-bg);border-color:#e8c878}
+.doc-status-banner.rejete{background:var(--red-bg);border-color:#f0b8b8}
+.doc-status-banner.aucun{background:var(--ink-07);border-color:var(--ink-15)}
+.doc-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.res-row{background:#fff;border:1px solid var(--ink-15);border-radius:12px;padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:20px}
+.res-icon{font-size:36px;flex-shrink:0}
+.res-info{flex:1}
+.res-title{font-weight:700;font-size:15px;margin-bottom:2px}
+.res-meta{font-size:12.5px;color:var(--ink-70)}
+.res-price{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.02em;text-align:right;flex-shrink:0}
+.res-price span{font-size:11px;font-weight:400;color:var(--ink-40);display:block;font-family:'Instrument Sans',sans-serif}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>Bonjour, {{ user.first_name }} 👋</h1>
+    <p>Bienvenue dans votre espace client.</p>
+  </div>
+
+  <!-- DOC STATUS -->
+  {% set doc_configs = {
+    'approuve': ('✓', 'Vos documents sont validés. Vous pouvez réserver librement.', 'var(--green)', 'badge-green', 'Approuvé'),
+    'en_attente': ('⏳', 'Vos documents sont en cours de vérification. Vous serez notifié dès validation.', '#7a5010', 'badge-gold', 'En attente'),
+    'rejete': ('✕', 'Vos documents ont été refusés. ' + (user.doc_reject_reason or '') + ' Veuillez les re-soumettre.', 'var(--red)', 'badge-red', 'Refusé'),
+    'aucun': ('📄', 'Déposez vos documents pour pouvoir réserver un véhicule.', 'var(--ink-70)', 'badge-gray', 'Non soumis'),
+  } %}
+  {% set cfg = doc_configs.get(user.doc_status, doc_configs['aucun']) %}
+  <div class="doc-status-banner {{ user.doc_status }}">
+    <div class="doc-icon" style="background:rgba(0,0,0,.06);color:{{ cfg[2] }}">{{ cfg[0] }}</div>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:14px;margin-bottom:3px">Statut documentaire : <span class="badge {{ cfg[3] }}">{{ cfg[4] }}</span></div>
+      <div style="font-size:13px;color:var(--ink-70)">{{ cfg[1] }}</div>
+    </div>
+    {% if user.doc_status != 'approuve' %}
+    <a href="/documents" class="btn btn-outline btn-sm">{{ 'Re-soumettre' if user.doc_status=='rejete' else 'Déposer mes documents' }}</a>
+    {% endif %}
+  </div>
+
+  <!-- QUICK STATS -->
+  <div class="grid-4" style="margin-bottom:32px">
+    {% set total = reservations|length %}
+    {% set active = reservations|selectattr('status','in',['en_attente','confirmee'])|list|length %}
+    {% set done = reservations|selectattr('status','equalto','terminee')|list|length %}
+    {% set spent = reservations|selectattr('status','equalto','terminee')|sum(attribute='total_price') %}
+    {% for label, val, sub in [('Total réservations', total, 'depuis inscription'),('En cours', active, 'en attente ou confirmée'),('Terminées', done, 'locations clôturées'),('Dépensé', (spent|round(2)|string) + ' FCFA', 'total cumulé')] %}
+    <div class="stat-card">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value">{{ val }}</div>
+      <div class="stat-sub">{{ sub }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- RESERVATIONS -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700">Mes réservations</h2>
+    <a href="/catalogue" class="btn btn-primary btn-sm">+ Nouvelle réservation</a>
+  </div>
+  {% if reservations %}
+  {% for r in reservations %}
+  <div class="res-row">
+    <div class="res-icon">{% if 'Citadine' in (r.brand or '') %}🚗{% elif 'SUV' in (r.brand or '') %}🚙{% else %}🚘{% endif %}</div>
+    <div class="res-info">
+      <div class="res-title">{{ r.brand }} {{ r.model }}</div>
+      <div class="res-meta">
+        📅 {{ r.date_start }} → {{ r.date_end }} &nbsp;·&nbsp;
+        🚗 {{ r.plate }}
+      </div>
+      {% if r.notes %}<div class="res-meta" style="margin-top:3px">📝 {{ r.notes }}</div>{% endif %}
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <span class="badge {% if r.status=='confirmee' %}badge-green{% elif r.status=='en_attente' %}badge-gold{% elif r.status=='terminee' %}badge-teal{% elif r.status in ['annulee','refusee'] %}badge-red{% else %}badge-gray{% endif %}">
+        {{ {'en_attente':'En attente','confirmee':'Confirmée','terminee':'Terminée','annulee':'Annulée','refusee':'Refusée'}.get(r.status, r.status) }}
+      </span>
+      {% if r.status in ['en_attente','confirmee'] %}
+      <form method="post" action="/annuler-reservation/{{ r.id }}" style="display:inline" onsubmit="return confirm('Confirmer l\'annulation ?')">
+        <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
+      </form>
+      {% elif r.status == 'terminee' %}
+        <div class="res-price">{{ r.total_price }} FCFA <span>Total payé</span></div>
+        {% if not r.invoice_id %}<a href="/avis/{{ r.id }}" class="btn btn-outline btn-sm">Laisser un avis ⭐</a>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div style="text-align:center;padding:48px;background:#fff;border:1px solid var(--ink-15);border-radius:12px">
+    <div style="font-size:40px;margin-bottom:12px">🚗</div>
+    <div style="font-weight:600;font-size:16px;margin-bottom:6px">Aucune réservation</div>
+    <div style="color:var(--ink-70);font-size:14px;margin-bottom:20px">Consultez notre catalogue pour trouver votre prochain véhicule.</div>
+    <a href="/catalogue" class="btn btn-primary">Voir le catalogue</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

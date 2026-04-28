@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Fleet Manager{% endblock %} — Location de véhicules</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111110;
+  --ink-70: #3d3d3a;
+  --ink-50: #6b6b67;
+  --ink-20: #c8c7c2;
+  --ink-08: #f0efe9;
+  --paper: #ffffff;
+  --paper-bg: #f7f6f2;
+  --accent: #1e4080;
+  --accent-light: #dde6f5;
+  --gold: #b06000;
+  --gold-bg: #fff4e0;
+  --teal: #0a5c4a;
+  --teal-bg: #e0f5ef;
+  --red: #b02020;
+  --red-bg: #fdeaea;
+  --green: #1a6b30;
+  --green-bg: #e8f7ee;
+  --nav-h: 68px;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--paper-bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ── NAVBAR ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--nav-h);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1.5px solid var(--ink-20);
+  display: flex; align-items: center;
+  padding: 0 40px; gap: 8px;
+  box-shadow: 0 1px 8px rgba(0,0,0,.06);
+}
+.nav-logo {
+  font-weight: 800; font-size: 18px;
+  letter-spacing: -0.03em; color: var(--ink);
+  margin-right: auto;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--accent); color: #fff;
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+}
+.nav-link {
+  font-size: 14px; font-weight: 600;
+  padding: 8px 16px; border-radius: 8px;
+  color: var(--ink-50); transition: all .15s;
+}
+.nav-link:hover { background: var(--ink-08); color: var(--ink); }
+.nav-link.active { background: var(--ink-08); color: var(--ink); }
+.nav-btn {
+  font-size: 14px; font-weight: 700;
+  padding: 9px 20px; border-radius: 9px;
+  background: var(--ink); color: #fff;
+  transition: all .15s; border: none; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.nav-btn:hover { background: var(--accent); }
+.nav-notif {
+  position: relative; width: 38px; height: 38px;
+  border-radius: 9px; background: var(--ink-08);
+  border: 1.5px solid var(--ink-20);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 17px; transition: all .15s; margin-left: 4px;
+}
+.nav-notif:hover { background: var(--ink-20); }
+.notif-badge {
+  position: absolute; top: -5px; right: -5px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── FLASH ── */
+.flash-container { padding: 12px 40px 0; }
+.flash {
+  padding: 13px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px; border: 1.5px solid;
+}
+.flash.success { background: var(--green-bg); border-color: #9ad4ae; color: var(--green); }
+.flash.error   { background: var(--red-bg);   border-color: #f0b8b8; color: var(--red); }
+.flash.info    { background: var(--accent-light); border-color: #a8c0e8; color: var(--accent); }
+.flash.warning { background: var(--gold-bg);  border-color: #e8c070; color: var(--gold); }
+
+/* ── MAIN ── */
+main { min-height: calc(100vh - var(--nav-h) - 80px); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1.5px solid var(--ink-20);
+  padding: 28px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 80px; background: #fff;
+}
+.footer-brand { font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+.footer-copy  { font-size: 13px; color: var(--ink-50); }
+
+/* ── UTILS ── */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 40px; }
+.page-header { padding: 44px 0 28px; }
+.page-header h1 {
+  font-size: 30px; font-weight: 800;
+  letter-spacing: -0.03em; margin-bottom: 6px;
+}
+.page-header p { color: var(--ink-50); font-size: 15px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; border-radius: 9px;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  border: 1.5px solid transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+.btn-outline { background: #fff; color: var(--ink); border-color: var(--ink-20); }
+.btn-outline:hover { background: var(--ink-08); border-color: var(--ink-50); }
+.btn-danger  { background: var(--red-bg);   color: var(--red);   border-color: #f0b8b8; }
+.btn-danger:hover  { background: var(--red);   color: #fff; }
+.btn-success { background: var(--green-bg); color: var(--green); border-color: #9ad4ae; }
+.btn-success:hover { background: var(--green); color: #fff; }
+.btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 11px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  border: 1.5px solid; letter-spacing: 0.01em;
+}
+.badge-green { background: var(--green-bg); border-color: #9ad4ae; color: var(--green); }
+.badge-red   { background: var(--red-bg);   border-color: #f0b8b8; color: var(--red); }
+.badge-gold  { background: var(--gold-bg);  border-color: #e8c070; color: var(--gold); }
+.badge-blue  { background: var(--accent-light); border-color: #a8c0e8; color: var(--accent); }
+.badge-gray  { background: var(--ink-08);   border-color: var(--ink-20); color: var(--ink-50); }
+.badge-teal  { background: var(--teal-bg);  border-color: #90d4c0; color: var(--teal); }
+
+/* ── CARDS ── */
+.card {
+  background: #fff;
+  border: 1.5px solid var(--ink-20);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* ── FORMS ── */
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block; font-size: 14px; font-weight: 700;
+  color: var(--ink-70); margin-bottom: 7px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 11px 15px;
+  border: 1.5px solid var(--ink-20); border-radius: 9px;
+  font-size: 15px; font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #fff; color: var(--ink);
+  transition: border-color .15s; outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(30,64,128,.1);
+}
+.form-textarea { resize: vertical; min-height: 90px; }
+.form-select { cursor: pointer; }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+/* ── TABLE ── */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-50);
+  text-align: left; padding: 0 14px 12px 0;
+  border-bottom: 1.5px solid var(--ink-20); font-weight: 500;
+}
+tbody tr { border-bottom: 1px solid var(--ink-08); }
+tbody tr:last-child { border-bottom: none; }
+tbody td { padding: 14px 14px 14px 0; vertical-align: middle; }
+tbody tr:hover { background: var(--ink-08); }
+
+/* ── STATS CARDS ── */
+.stat-card {
+  background: #fff; border: 1.5px solid var(--ink-20);
+  border-radius: var(--radius); padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-50); margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px; font-weight: 800;
+  letter-spacing: -.03em; line-height: 1;
+}
+.stat-sub { font-size: 13px; color: var(--ink-50); margin-top: 5px; }
+
+.star { color: #e8a020; font-size: 14px; }
+
+/* ── NOTIF PANEL ── */
+.notif-panel {
+  display: none; position: fixed; top: 76px; right: 40px;
+  width: 360px; background: #fff;
+  border: 1.5px solid var(--ink-20);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  z-index: 200; overflow: hidden;
+}
+.notif-panel.open { display: block; }
+.notif-header {
+  padding: 16px 20px; border-bottom: 1.5px solid var(--ink-20);
+  font-size: 14px; font-weight: 700;
+}
+.notif-item {
+  padding: 13px 20px; border-bottom: 1px solid var(--ink-08);
+  font-size: 13px; line-height: 1.55;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unread { background: #f0f4ff; }
+.notif-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.notif-msg { color: var(--ink-70); }
+.notif-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--ink-50); margin-top: 4px;
+}
+.notif-empty { padding: 28px; text-align: center; color: var(--ink-50); font-size: 14px; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .container { padding: 0 16px; }
+  .flash-container { padding: 12px 16px 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  footer { padding: 24px 16px; flex-direction: column; gap: 8px; text-align: center; }
+  .nav-link:not(.active):not(.nav-btn) { display: none; }
+}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">FM</div>
+    Fleet Manager
+  </a>
+  <div style="display:flex;align-items:center;gap:4px">
+    <a href="/" class="nav-link {% if request.endpoint=='index' %}active{% endif %}">Accueil</a>
+    <a href="/catalogue" class="nav-link {% if request.endpoint=='catalogue' %}active{% endif %}">Catalogue</a>
+    {% if session.user_id %}
+      {% if session.role == 'admin' %}
+        <a href="/admin" class="nav-link {% if 'admin' in (request.endpoint or '') %}active{% endif %}">Administration</a>
+      {% else %}
+        <a href="/espace-client" class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}">Mon espace</a>
+        <a href="/documents" class="nav-link {% if request.endpoint=='upload_documents' %}active{% endif %}">Documents</a>
+      {% endif %}
+      <div class="nav-notif" onclick="toggleNotifs(this)" id="notif-btn">
+        🔔
+        {% if unread and unread > 0 %}
+          <span class="notif-badge">{{ unread }}</span>
+        {% endif %}
+      </div>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-header">
+          Notifications
+          <button onclick="markRead()" style="float:right;font-size:12px;background:none;border:none;cursor:pointer;color:var(--accent);font-weight:600">Tout lire</button>
+        </div>
+        {% if notifs %}
+          {% for n in notifs %}
+          <div class="notif-item {% if not n.read %}unread{% endif %}">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-msg">{{ n.message }}</div>
+            <div class="notif-time">{{ n.created_at[:16] }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="notif-empty">Aucune notification</div>
+        {% endif %}
+      </div>
+      <a href="/deconnexion" class="btn btn-outline btn-sm" style="margin-left:6px">Déconnexion</a>
+    {% else %}
+      <a href="/connexion" class="nav-link">Connexion</a>
+      <a href="/inscription" class="nav-btn">Créer un compte</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="flash-container">
+  {% for cat, msgs in get_flashed_messages(with_categories=True) %}
+    <div class="flash {{ cat }}">
+      {% if cat == 'success' %}✓{% elif cat == 'error' %}✕{% elif cat == 'warning' %}⚠{% else %}ℹ{% endif %}
+      {{ msgs }}
+    </div>
+  {% endfor %}
+</div>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="footer-brand">🚗 Fleet Manager</div>
+  <div class="footer-copy">© 2025 — Plateforme de gestion de flotte automobile</div>
+</footer>
+
+<script>
+function toggleNotifs(btn) {
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+  document.addEventListener('click', function handler(e) {
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('open');
+      document.removeEventListener('click', handler);
+    }
+  }, true);
+}
+function markRead() {
+  fetch('/notifications/lues', { method: 'POST' }).then(() => {
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if (badge) badge.remove();
+  });
+}
+setTimeout(() => {
+  document.querySelectorAll('.flash').forEach(f => {
+    f.style.transition = 'opacity .4s';
+    f.style.opacity = '0';
+    setTimeout(() => f.remove(), 400);
+  });
+}, 4000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

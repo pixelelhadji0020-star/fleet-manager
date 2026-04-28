@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:60px">
+  <a href="/catalogue" style="font-size:13px;color:var(--ink-70);display:inline-flex;align-items:center;gap:6px;margin-bottom:28px">← Retour au catalogue</a>
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start">
+    <div>
+      <!-- IMAGE -->
+      <div style="height:300px;background:var(--ink-07);border-radius:16px;overflow:hidden;border:1px solid var(--ink-15);margin-bottom:24px;display:flex;align-items:center;justify-content:center;">
+        {% if vehicle.image %}
+          <img src="/uploads/{{ vehicle.image }}" alt="{{ vehicle.brand }} {{ vehicle.model }}"
+               style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <span style="font-size:90px">
+            {% if vehicle.category=='Citadine' %}🚗
+            {% elif vehicle.category=='SUV' %}🚙
+            {% elif vehicle.category=='Luxe' %}🏎️
+            {% elif vehicle.category=='Utilitaire' %}🚐
+            {% else %}🚘{% endif %}
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- TITRE -->
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px">
+        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.03em">{{ vehicle.brand }} {{ vehicle.model }}</h1>
+        <span class="badge badge-gray">{{ vehicle.category }}</span>
+      </div>
+
+      {% if avg and avg.avg_note %}
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;color:var(--ink-70);font-size:14px">
+        <span class="star" style="font-size:16px">★</span>
+        <strong>{{ avg.avg_note }}/5</strong>
+        <span style="color:var(--ink-40)">— {{ avg.total }} avis client{{ 's' if avg.total > 1 }}</span>
+      </div>
+      {% endif %}
+
+      <p style="color:var(--ink-70);line-height:1.7;margin-bottom:24px;font-size:15px">
+        {{ vehicle.description or 'Véhicule de qualité, soigneusement entretenu par notre équipe.' }}
+      </p>
+
+      <!-- SPECS -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px">
+        {% for label, val in [
+          ('Carburant', vehicle.fuel),
+          ('Transmission', vehicle.transmission),
+          ('Places', vehicle.seats|string + ' places'),
+          ('Couleur', vehicle.color or '—'),
+          ('Année', vehicle.year|string),
+          ('Kilométrage', (vehicle.mileage|string) + ' km')
+        ] %}
+        <div style="background:#fff;border:1px solid var(--ink-15);border-radius:10px;padding:14px 16px">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-40);margin-bottom:5px;font-weight:500">{{ label }}</div>
+          <div style="font-weight:700;font-size:14px">{{ val }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- AVIS -->
+      {% if reviews %}
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Avis clients</h2>
+      {% for r in reviews %}
+      <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;padding:18px 20px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:14px">{{ r.first_name }} {{ r.last_name[0] }}.</strong>
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--ink-70)">
+            <span>Confort <span class="star">★</span>{{ r.comfort_note }}</span>
+            <span>Propreté <span class="star">★</span>{{ r.cleanliness_note }}</span>
+            <span>Fiabilité <span class="star">★</span>{{ r.reliability_note }}</span>
+          </div>
+        </div>
+        {% if r.comment %}
+        <p style="font-size:13.5px;color:var(--ink-70);line-height:1.6;font-style:italic">"{{ r.comment }}"</p>
+        {% endif %}
+        <div style="font-size:10px;color:var(--ink-40);margin-top:6px">{{ r.created_at[:10] }}</div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- PANNEAU RÉSERVATION -->
+    <div style="position:sticky;top:80px">
+      <div class="card">
+        <div style="font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px">
+          {{ "{:,.0f}".format(vehicle.price_per_day) }} FCFA
+        </div>
+        <div style="font-size:13px;color:var(--ink-40);margin-bottom:20px">par jour TTC</div>
+
+        <div style="background:var(--ink-07);border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="color:var(--ink-70)">Immatriculation</span>
+            <strong>{{ vehicle.plate }}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--ink-70)">Statut</span>
+            <span class="badge {% if vehicle.status=='disponible' %}badge-green{% elif vehicle.status=='louee' %}badge-gold{% else %}badge-red{% endif %}">
+              {{ 'Disponible' if vehicle.status=='disponible' else 'En location' if vehicle.status=='louee' else 'Hors service' }}
+            </span>
+          </div>
+        </div>
+
+        {% if session.user_id %}
+          {% if session.role == 'client' %}
+            {% if vehicle.status == 'disponible' %}
+              <a href="/reserver/{{ vehicle.id }}" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:13px">
+                Réserver ce véhicule →
+              </a>
+            {% else %}
+              <button class="btn btn-outline" style="width:100%;justify-content:center;cursor:not-allowed;opacity:.6" disabled>
+                Véhicule non disponible
+              </button>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          <a href="/connexion" class="btn btn-primary" style="width:100%;justify-content:center">
+            Se connecter pour réserver
+          </a>
+          <a href="/inscription" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:10px">
+            Créer un compte
+          </a>
+        {% endif %}
+
+        <div style="margin-top:16px;padding:12px;background:#e8eef8;border-radius:8px;font-size:12.5px;color:var(--accent);line-height:1.6">
+          🔒 Vos documents doivent être approuvés avant de pouvoir réserver.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

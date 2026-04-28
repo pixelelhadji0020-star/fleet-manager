@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Modifier' if vehicle else 'Ajouter' }} un véhicule{% endblock %}
+{% block extra_css %}
+<style>
+.admin-nav{background:#fff;border-bottom:1px solid var(--ink-15);padding:0 48px;display:flex;gap:4px;overflow-x:auto}
+.admin-nav a{font-size:12.5px;font-weight:500;padding:12px 16px;color:var(--ink-70);border-bottom:2px solid transparent;white-space:nowrap}
+.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.img-preview{
+  width:100%;height:180px;border:2px dashed var(--ink-15);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;background:var(--ink-07);
+  font-size:13px;color:var(--ink-40);gap:8px;position:relative;overflow:hidden;
+}
+.img-preview:hover{border-color:var(--accent);background:var(--accent-light,#dde6f5)}
+.img-preview img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.img-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.45);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;color:#fff;gap:6px;border-radius:8px;pointer-events:none;
+}
+.img-preview:hover .img-overlay{opacity:1}
+#image-input{display:none}
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-nav">
+  <a href="/admin">Dashboard</a>
+  <a href="/admin/clients">Clients</a>
+  <a href="/admin/reservations">Réservations</a>
+  <a href="/admin/vehicules" class="active">Véhicules</a>
+  <a href="/admin/statistiques">Statistiques</a>
+</div>
+<div class="container" style="max-width:720px;padding-top:32px;padding-bottom:60px">
+  <a href="/admin/vehicules" style="font-size:13px;color:var(--ink-70);display:inline-flex;align-items:center;gap:6px;margin-bottom:24px">← Tous les véhicules</a>
+  <h1 style="font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:24px">
+    {{ 'Modifier le véhicule' if vehicle else 'Ajouter un véhicule' }}
+  </h1>
+  <form method="post" enctype="multipart/form-data" class="card">
+
+    <!-- IMAGE -->
+    <div class="form-group">
+      <label class="form-label">Photo du véhicule <span style="color:var(--ink-40)">(JPG, PNG — optionnel)</span></label>
+      <div class="img-preview" onclick="document.getElementById('image-input').click()" id="preview-box">
+        <img id="preview-img" {% if not (vehicle and vehicle.image) %}style="display:none"{% else %}src="/uploads/{{ vehicle.image }}"{% endif %} alt="Photo">
+        <div class="img-overlay">
+          <span style="font-size:22px">📷</span>
+          <span style="font-size:13px;font-weight:600">Changer la photo</span>
+        </div>
+        <div id="placeholder-content" {% if vehicle and vehicle.image %}style="display:none"{% endif %}>
+          <span style="font-size:32px">📷</span>
+          <span style="font-weight:600">Cliquer pour ajouter une photo</span>
+          <span style="font-size:11px">JPG ou PNG, 10 Mo max</span>
+        </div>
+      </div>
+      <input type="file" id="image-input" name="image" accept=".jpg,.jpeg,.png" onchange="previewImage(this)">
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--ink-15);margin:4px 0 20px">
+
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Marque</label>
+        <input class="form-input" type="text" name="brand" value="{{ vehicle.brand if vehicle else '' }}" required placeholder="Renault"></div>
+      <div class="form-group"><label class="form-label">Modèle</label>
+        <input class="form-input" type="text" name="model" value="{{ vehicle.model if vehicle else '' }}" required placeholder="Clio 5"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Immatriculation</label>
+        <input class="form-input" type="text" name="plate" value="{{ vehicle.plate if vehicle else '' }}" required placeholder="AB-123-CD"></div>
+      <div class="form-group"><label class="form-label">Catégorie</label>
+        <select class="form-select" name="category">
+          {% for cat in ['Citadine','Berline','SUV','Luxe','Utilitaire','Cabriolet'] %}
+          <option value="{{ cat }}" {% if vehicle and vehicle.category==cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select></div>
+    </div>
+    <div class="grid-4">
+      <div class="form-group"><label class="form-label">Année</label>
+        <input class="form-input" type="number" name="year" value="{{ vehicle.year if vehicle else 2023 }}" min="2000" max="2030" required></div>
+      <div class="form-group"><label class="form-label">Couleur</label>
+        <input class="form-input" type="text" name="color" value="{{ vehicle.color if vehicle else '' }}" placeholder="Rouge"></div>
+      <div class="form-group"><label class="form-label">Places</label>
+        <input class="form-input" type="number" name="seats" value="{{ vehicle.seats if vehicle else 5 }}" min="1" max="9"></div>
+      <div class="form-group"><label class="form-label">Kilométrage</label>
+        <input class="form-input" type="number" name="mileage" value="{{ vehicle.mileage if vehicle else 0 }}" min="0"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Carburant</label>
+        <select class="form-select" name="fuel">
+          {% for f in ['Essence','Diesel','Hybride','Électrique','GPL'] %}
+          <option value="{{ f }}" {% if vehicle and vehicle.fuel==f %}selected{% endif %}>{{ f }}</option>
+          {% endfor %}
+        </select></div>
+      <div class="form-group"><label class="form-label">Transmission</label>
+        <select class="form-select" name="transmission">
+          {% for t in ['Manuelle','Automatique'] %}
+          <option value="{{ t }}" {% if vehicle and vehicle.transmission==t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Prix / jour (FCFA)</label>
+        <input class="form-input" type="number" name="price_per_day" value="{{ vehicle.price_per_day if vehicle else '' }}" step="1" min="1" required placeholder="30000"></div>
+      <div class="form-group"><label class="form-label">Statut</label>
+        <select class="form-select" name="status">
+          {% for s, l in [('disponible','Disponible'),('louee','En location'),('hors_service','Hors service')] %}
+          <option value="{{ s }}" {% if vehicle and vehicle.status==s %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description <span style="color:var(--ink-40)">(optionnel)</span></label>
+      <textarea class="form-textarea" name="description" placeholder="Décrivez le véhicule...">{{ vehicle.description if vehicle else '' }}</textarea></div>
+    <button type="submit" class="btn btn-primary" style="font-size:15px;padding:13px 32px;width:100%;justify-content:center">
+      {{ 'Enregistrer les modifications' if vehicle else '+ Ajouter le véhicule' }}
+    </button>
+  </form>
+</div>
+{% block extra_js %}
+<script>
+function previewImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('preview-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    const ph = document.getElementById('placeholder-content');
+    if (ph) ph.style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+</script>
+{% endblock %}
+{% endblock %}

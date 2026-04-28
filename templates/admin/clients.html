@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Clients{% endblock %}
+{% block extra_css %}
+<style>
+.admin-nav{background:#fff;border-bottom:1px solid var(--ink-15);padding:0 48px;display:flex;gap:4px;overflow-x:auto}
+.admin-nav a{font-size:12.5px;font-weight:500;padding:12px 16px;color:var(--ink-70);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.admin-nav a:hover{color:var(--ink)}
+.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-nav">
+  <a href="/admin">Dashboard</a>
+  <a href="/admin/clients" class="active">Clients</a>
+  <a href="/admin/reservations">Réservations</a>
+  <a href="/admin/vehicules">Véhicules</a>
+  <a href="/admin/statistiques">Statistiques</a>
+</div>
+<div class="container" style="padding-top:32px;padding-bottom:60px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em">Gestion des clients</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      {% for val, label in [('','Tous'),('en_attente','En attente'),('approuve','Approuvés'),('rejete','Refusés'),('aucun','Sans docs')] %}
+      <a href="/admin/clients{% if val %}?status={{ val }}{% endif %}" class="btn {% if status_filter==val %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Documents</th><th>Inscrit le</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for c in clients %}
+      <tr>
+        <td><strong>{{ c.first_name }} {{ c.last_name }}</strong></td>
+        <td style="color:var(--ink-70)">{{ c.email }}</td>
+        <td style="color:var(--ink-70)">{{ c.phone or '—' }}</td>
+        <td><span class="badge {% if c.doc_status=='approuve' %}badge-green{% elif c.doc_status=='en_attente' %}badge-gold{% elif c.doc_status=='rejete' %}badge-red{% else %}badge-gray{% endif %}">
+          {{ {'aucun':'Non soumis','en_attente':'En attente','approuve':'Approuvé','rejete':'Refusé'}.get(c.doc_status,c.doc_status) }}
+        </span></td>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-70)">{{ c.created_at[:10] }}</td>
+        <td><a href="/admin/client/{{ c.id }}" class="btn btn-outline btn-sm">Voir →</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-70)">Aucun client trouvé</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
