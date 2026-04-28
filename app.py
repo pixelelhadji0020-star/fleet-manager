@@ -14,6 +14,8 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 DATABASE = os.path.join(os.path.dirname(__file__), 'instance', 'fleet.db')
+# Créer le dossier instance si inexistant
+os.makedirs(os.path.join(os.path.dirname(__file__), 'instance'), exist_ok=True)
 
 # ─────────────────────────────────────────────
 # DATABASE
@@ -772,7 +774,8 @@ def uploaded_file(filename):
 # ─────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────
-
+# Init automatique pour gunicorn
+init_db()
 if __name__ == '__main__':
     init_db()
     print("\n" + "="*55)
