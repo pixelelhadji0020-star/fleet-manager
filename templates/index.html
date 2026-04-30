@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <style>
+/* ── HERO ───────────────────────────────────────────── */
 .hero{
   background:var(--ink);color:var(--paper);
   padding:80px 48px;display:flex;align-items:center;justify-content:space-between;gap:48px;
@@ -42,6 +43,7 @@
 .hero-stat-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
 .hero-stat-label{font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;font-family:'DM Mono',monospace;letter-spacing:.06em}
 
+/* ── SECTION LABEL ──────────────────────────────────── */
 .section-label-outer{
   font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--ink-40);margin-bottom:16px;
@@ -49,6 +51,7 @@
 }
 .section-label-outer::after{content:'';flex:1;height:1px;background:var(--ink-15)}
 
+/* ── VEHICLE CARDS ──────────────────────────────────── */
 .vcard{
   background:#fff;border:1px solid var(--ink-15);border-radius:14px;
   overflow:hidden;transition:all .2s;display:flex;flex-direction:column;
@@ -78,6 +81,14 @@
 .vcard-price{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.03em}
 .vcard-price span{font-family:'Instrument Sans',sans-serif;font-size:12px;font-weight:400;color:var(--ink-40)}
 
+/* grille véhicules : 3 → 2 → 1 */
+.vehicles-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+
+/* ── HOW IT WORKS ───────────────────────────────────── */
 .how-step{display:flex;gap:20px;align-items:flex-start;padding:24px 0;border-bottom:1px solid var(--ink-15)}
 .how-step:last-child{border-bottom:none}
 .how-num{
@@ -88,6 +99,15 @@
 .how-title{font-weight:700;font-size:16px;margin-bottom:4px}
 .how-desc{font-size:14px;color:var(--ink-70);line-height:1.6}
 
+/* grille "comment / pourquoi" : 2 colonnes → 1 */
+.how-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  align-items:start;
+}
+
+/* ── CTA BAND ───────────────────────────────────────── */
 .cta-band{
   background:var(--accent);color:#fff;
   border-radius:16px;padding:48px;margin:48px 0;
@@ -101,6 +121,71 @@
   font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:all .15s;flex-shrink:0;
 }
 .cta-btn:hover{background:#e8e5e0}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — TABLETTE  (≤ 900 px)
+   ═══════════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .hero{
+    padding:56px 32px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:32px;
+  }
+  .hero-title{font-size:40px}
+  .hero-stats{
+    width:100%;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:20px 24px;
+    min-width:0;
+  }
+  .hero-stats > div{flex:1;min-width:120px}
+  .hero-stat-val{font-size:28px}
+
+  .vehicles-grid{grid-template-columns:repeat(2,1fr)}
+
+  .how-grid{
+    grid-template-columns:1fr;
+    gap:32px;
+  }
+
+  .cta-band{
+    flex-direction:column;
+    align-items:flex-start;
+    padding:32px;
+    gap:20px;
+  }
+  .cta-btn{width:100%;text-align:center}
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE  (≤ 560 px)
+   ═══════════════════════════════════════════════════════ */
+@media(max-width:560px){
+  .hero{padding:40px 20px;gap:28px}
+  .hero-title{font-size:32px}
+  .hero-sub{font-size:14px;margin-bottom:24px}
+  .hero-actions{flex-direction:column;gap:10px}
+  .hero-btn{width:100%;text-align:center;padding:14px 20px}
+  .hero-stats{gap:8px;padding:16px}
+  .hero-stats > div{min-width:calc(50% - 4px)}
+  .hero-stat-val{font-size:24px}
+
+  .vehicles-grid{grid-template-columns:1fr}
+
+  .section-label-outer{font-size:9px}
+
+  .how-num{width:36px;height:36px;font-size:13px;border-radius:9px}
+  .how-title{font-size:14px}
+
+  .cta-band{padding:24px 20px;border-radius:12px;margin:32px 0}
+  .cta-title{font-size:22px}
+  .cta-sub{font-size:13px}
+
+  .container{padding-left:20px;padding-right:20px}
+}
 </style>
 {% endblock %}
 
@@ -137,11 +222,11 @@
   <!-- VEHICLES -->
   <section style="padding:56px 0 0">
     <div class="section-label-outer">Sélection du moment</div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:28px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:28px;flex-wrap:wrap;gap:8px">
       <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em">Nos véhicules populaires</h2>
       <a href="/catalogue" style="font-size:13px;font-weight:600;color:var(--accent)">Voir tout →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="vehicles-grid">
       {% for v in vehicles %}
       <div class="vcard">
         <div class="vcard-img">
@@ -180,7 +265,7 @@
   <!-- HOW IT WORKS -->
   <section style="padding:64px 0">
     <div class="section-label-outer">Comment ça marche</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
+    <div class="how-grid">
       <div>
         <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:28px">Réservez en 4 étapes</h2>
         <div class="how-step">
