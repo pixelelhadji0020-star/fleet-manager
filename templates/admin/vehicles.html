@@ -2,34 +2,116 @@
 {% block title %}Véhicules{% endblock %}
 {% block extra_css %}
 <style>
-.admin-nav{background:#fff;border-bottom:1px solid var(--ink-15);padding:0 48px;display:flex;gap:4px;overflow-x:auto}
-.admin-nav a{font-size:12.5px;font-weight:500;padding:12px 16px;color:var(--ink-70);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
-.admin-nav a:hover{color:var(--ink)}.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+/* ── ADMIN NAV ──────────────────────────────────────── */
+.admin-nav{
+  background:#fff;border-bottom:1px solid var(--ink-15);
+  padding:0 48px;display:flex;gap:4px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;          /* Firefox */
+}
+.admin-nav::-webkit-scrollbar{display:none} /* Chrome/Safari */
+.admin-nav a{
+  font-size:12.5px;font-weight:500;padding:12px 16px;
+  color:var(--ink-70);border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .15s;
+}
+.admin-nav a:hover{color:var(--ink)}
+.admin-nav a.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+
+/* ── TABLE WRAPPER — défilement horizontal sur mobile ── */
+.table-scroll{
+  background:#fff;border:1px solid var(--ink-15);border-radius:12px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+/* La table elle-même ne se rétrécit plus sous sa taille naturelle */
+.table-scroll table{
+  min-width:720px; /* assure que toutes les colonnes restent lisibles */
+  width:100%;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — TABLETTE  (≤ 900 px)
+   ═══════════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .admin-nav{padding:0 20px}
+  .page-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .page-header .btn{width:100%;text-align:center}
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE  (≤ 560 px)
+   ═══════════════════════════════════════════════════════ */
+@media(max-width:560px){
+  .admin-nav{padding:0 12px}
+  .admin-nav a{font-size:11.5px;padding:10px 12px}
+
+  .container{padding-left:16px;padding-right:16px}
+
+  h1{font-size:20px !important}
+
+  /* Petite astuce UX : une légère ombre à droite indique
+     qu'on peut faire défiler le tableau */
+  .table-scroll{
+    border-radius:10px;
+    box-shadow:inset -8px 0 12px -8px rgba(0,0,0,.08);
+  }
+}
 </style>
 {% endblock %}
+
 {% block content %}
 <div class="admin-nav">
-  <a href="/admin">Dashboard</a><a href="/admin/clients">Clients</a><a href="/admin/reservations">Réservations</a>
-  <a href="/admin/vehicules" class="active">Véhicules</a><a href="/admin/statistiques">Statistiques</a>
+  <a href="/admin">Dashboard</a>
+  <a href="/admin/clients">Clients</a>
+  <a href="/admin/reservations">Réservations</a>
+  <a href="/admin/vehicules" class="active">Véhicules</a>
+  <a href="/admin/statistiques">Statistiques</a>
 </div>
+
 <div class="container" style="padding-top:32px;padding-bottom:60px">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em">Flotte — {{ vehicles|length }} véhicules</h1>
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em">
+      Flotte — {{ vehicles|length }} véhicules
+    </h1>
     <a href="/admin/vehicule/ajouter" class="btn btn-primary">+ Ajouter un véhicule</a>
   </div>
-  <div style="background:#fff;border:1px solid var(--ink-15);border-radius:12px;overflow:hidden">
+
+  <!-- Wrapper scrollable horizontalement sur mobile -->
+  <div class="table-scroll">
     <table>
-      <thead><tr><th>Véhicule</th><th>Plaque</th><th>Catégorie</th><th>Prix/j</th><th>Statut</th><th>Locations</th><th>CA</th><th>Note</th><th></th></tr></thead>
+      <thead>
+        <tr>
+          <th>Véhicule</th>
+          <th>Plaque</th>
+          <th>Catégorie</th>
+          <th>Prix/j</th>
+          <th>Statut</th>
+          <th>Locations</th>
+          <th>CA</th>
+          <th>Note</th>
+          <th></th>
+        </tr>
+      </thead>
       <tbody>
       {% for v in vehicles %}
       <tr>
-        <td><strong>{{ v.brand }} {{ v.model }}</strong><br><span style="font-size:11px;color:var(--ink-70)">{{ v.year }} · {{ v.fuel }}</span></td>
+        <td>
+          <strong>{{ v.brand }} {{ v.model }}</strong><br>
+          <span style="font-size:11px;color:var(--ink-70)">{{ v.year }} · {{ v.fuel }}</span>
+        </td>
         <td style="font-family:'DM Mono',monospace;font-size:12px">{{ v.plate }}</td>
         <td>{{ v.category }}</td>
         <td style="font-family:'Syne',sans-serif;font-weight:700">{{ v.price_per_day }} FCFA</td>
-        <td><span class="badge {% if v.status=='disponible' %}badge-green{% elif v.status=='louee' %}badge-gold{% else %}badge-red{% endif %}">
-          {{ {'disponible':'Disponible','louee':'En location','hors_service':'Hors service'}.get(v.status,v.status) }}
-        </span></td>
+        <td>
+          <span class="badge {% if v.status=='disponible' %}badge-green{% elif v.status=='louee' %}badge-gold{% else %}badge-red{% endif %}">
+            {{ {'disponible':'Disponible','louee':'En location','hors_service':'Hors service'}.get(v.status,v.status) }}
+          </span>
+        </td>
         <td style="text-align:center">{{ v.total_rentals or 0 }}</td>
         <td style="font-weight:600">{{ v.revenue or 0 }} FCFA</td>
         <td>{% if v.avg_note %}<span class="star">★</span> {{ v.avg_note }}{% else %}—{% endif %}</td>
